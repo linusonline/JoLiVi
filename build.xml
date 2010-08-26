@@ -102,28 +102,32 @@
                 output="manifest.package" />
 
     <!-- Input directories -->
-    <property name="source.dir" value="src" />
+    <property name="source.dir" value="src/java" />
     <property name="source.absolute.dir" location="${source.dir}" />
-    <property name="gen.dir" value="gen" />
-    <property name="gen.absolute.dir" location="${gen.dir}" />
     <property name="resource.dir" value="res" />
     <property name="resource.absolute.dir" location="${resource.dir}" />
     <property name="asset.dir" value="assets" />
     <property name="asset.absolute.dir" location="${asset.dir}" />
 
     <!-- Directory for the third party java libraries -->
-    <property name="external.libs.dir" value="libs" />
+    <property name="external.libs.dir" value="${out.dir}/ext-libs" />
     <property name="external.libs.absolute.dir" location="${external.libs.dir}" />
 
-    <!-- Directory for the native libraries -->
-    <property name="native.libs.dir" value="libs" />
-    <property name="native.libs.absolute.dir" location="${native.libs.dir}" />
-
     <!-- Output directories -->
-    <property name="out.dir" value="bin" />
+    <property name="out.dir" value="output" />
     <property name="out.absolute.dir" location="${out.dir}" />
-    <property name="out.classes.dir" value="${out.absolute.dir}/classes" />
+    <property name="out.classes.dir" value="${out.dir}/classes" />
     <property name="out.classes.absolute.dir" location="${out.classes.dir}" />
+    <property name="gen.dir" value="${out.dir}/generated" />
+    <property name="gen.absolute.dir" location="${gen.dir}" />
+    <property name="headers.dir" value="${gen.dir}/headers" />
+    <property name="headers.absolute.dir" location="${headers.dir}" />
+    <property name="out.jni.dir" value="${out.dir}/jni" />
+    <property name="out.jni.absolute.dir" location="${out.jni.dir}" />
+
+    <!-- Directory for the native libraries -->
+    <property name="native.libs.dir" value="${out.dir}/libs" />
+    <property name="native.libs.absolute.dir" location="${native.libs.dir}" />
 
     <!-- Intermediate files -->
     <property name="dex.file.name" value="classes.dex" />
@@ -260,9 +264,12 @@
         <echo>Creating output directories if needed...</echo>
         <mkdir dir="${resource.absolute.dir}" />
         <mkdir dir="${external.libs.absolute.dir}" />
+        <mkdir dir="${native.libs.absolute.dir}" />
         <mkdir dir="${gen.absolute.dir}" />
         <mkdir dir="${out.absolute.dir}" />
         <mkdir dir="${out.classes.absolute.dir}" />
+        <mkdir dir="${out.jni.absolute.dir}" />
+        <mkdir dir="${headers.absolute.dir}" />
     </target>
 
     <!-- Generates the R.java file for this project's resources. -->
@@ -302,11 +309,11 @@
         <!-- If android rules are used for a test project, its classpath should include
              tested project's location -->
         <condition property="extensible.classpath"
-                           value="${tested.project.absolute.dir}/bin/classes" else=".">
+                           value="${tested.project.absolute.dir}/${out.classes.dir}" else=".">
             <isset property="tested.project.absolute.dir" />
         </condition>
         <condition property="extensible.libs.classpath"
-                           value="${tested.project.absolute.dir}/libs" else="./libs">
+                           value="${tested.project.absolute.dir}/${external.libs.dir}" else="./${external.libs.dir}">
             <isset property="tested.project.absolute.dir" />
         </condition>
         <javac encoding="ascii" target="1.5" debug="true" extdirs=""
@@ -345,12 +352,12 @@
     </target>
 
     <!-- Packages the application and sign it with a debug key. -->
-    <target name="-package-debug-sign" depends="-dex, -package-resources">
+    <target name="-package-debug-sign" depends="-dex, -package-resources, -compile-native-code">
         <package-helper sign.package="true" />
     </target>
 
     <!-- Packages the application without signing it. -->
-    <target name="-package-no-sign" depends="-dex, -package-resources">
+    <target name="-package-no-sign" depends="-dex, -package-resources, -compile-native-code">
         <package-helper sign.package="false" />
     </target>
 
@@ -442,7 +449,6 @@
 
     <target name="clean" description="Removes output files created by other targets.">
         <delete dir="${out.absolute.dir}" verbose="${verbose}" />
-        <delete dir="${gen.absolute.dir}" verbose="${verbose}" />
     </target>
 
     <!-- Targets for code-coverage measurement purposes, invoked from external file -->
@@ -512,4 +518,39 @@
         <echo>   uninstall: Uninstalls the application from a running emulator or</echo>
         <echo>              device.</echo>
     </target>
+
+  <property name="native.classes" value="se.lolektivet.jolivi.JoLiViActivity"/>
+
+  <target name="native-headers" depends="compile,-dirs">
+    <run.javah/>
+  </target>
+
+  <target name="-compile-native-code" depends="native-headers,-application-mk">
+    <condition property="ndk.verbosity.arg" value="V=1 NDK_LOG=1" else="V=0">
+      <istrue value="${verbose}"/>
+    </condition>
+    <exec executable="sh" dir="${out.absolute.dir}" failonerror="true">
+      <arg line="${ndk.dir}/ndk-build ${ndk.verbosity.arg}"/>
+    </exec>
+  </target>
+
+  <target name="-application-mk" depends="-dirs">
+    <echo file="${out.jni.absolute.dir}/Application.mk">APP_PROJECT_PATH := $(shell cygpath "${out.absolute.dir}")
+APP_PLATFORM = ${target}
+APP_BUILD_SCRIPT := ${APP_PROJECT_PATH}/Android.mk
+</echo>
+    <copy file="AndroidManifest.xml" todir="${out.absolute.dir}"/>
+    <copy file="Android.mk" todir="${out.absolute.dir}"/>
+  </target>
+
+  <macrodef name="run.javah">
+    <sequential>
+      <javah class="${native.classes}"
+          destdir="${headers.absolute.dir}"
+          verbose="${verbose}"
+          classpath="${out.classes.dir}">
+        <bootclasspath refid="android.target.classpath"/>
+      </javah>
+    </sequential>
+  </macrodef>
 </project>
