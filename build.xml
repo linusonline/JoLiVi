@@ -109,10 +109,6 @@
     <property name="asset.dir" value="assets" />
     <property name="asset.absolute.dir" location="${asset.dir}" />
 
-    <!-- Directory for the third party java libraries -->
-    <property name="external.libs.dir" value="${out.dir}/ext-libs" />
-    <property name="external.libs.absolute.dir" location="${external.libs.dir}" />
-
     <!-- Output directories -->
     <property name="out.dir" value="output" />
     <property name="out.absolute.dir" location="${out.dir}" />
@@ -124,6 +120,10 @@
     <property name="headers.absolute.dir" location="${headers.dir}" />
     <property name="out.jni.dir" value="${out.dir}/jni" />
     <property name="out.jni.absolute.dir" location="${out.jni.dir}" />
+
+    <!-- Directory for the third party java libraries -->
+    <property name="external.libs.dir" value="${out.dir}/ext-libs" />
+    <property name="external.libs.absolute.dir" location="${external.libs.dir}" />
 
     <!-- Directory for the native libraries -->
     <property name="native.libs.dir" value="${out.dir}/libs" />
@@ -372,6 +372,8 @@
                 description="Builds the application and signs it with a debug key.">
         <zipalign-helper in.package="${out.debug.unaligned.package}"
                                    out.package="${out.debug.package}" />
+        <delete file="${out.debug.unaligned.package}"/>
+        <delete file="${out.absolute.dir}/JoLiVi.ap_"/>
         <echo>Debug Package: ${out.debug.package}</echo>
     </target>
 
