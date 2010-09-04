@@ -521,7 +521,9 @@
         <echo>              device.</echo>
     </target>
 
-  <property name="native.classes" value="se.lolektivet.jolivi.JoLiViActivity"/>
+  <property name="native.classes" value="se.lolektivet.jolivi.DemoGLSurfaceView,
+                                         se.lolektivet.jolivi.JoLiViActivity,
+                                         se.lolektivet.jolivi.DemoRenderer"/>
 
   <target name="native-headers" depends="compile,-dirs">
     <run.javah/>

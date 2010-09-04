@@ -36,12 +36,6 @@ extern "C" {
 #include <GLES/egl.h>
 #endif /* !ANDROID_NDK */
 
-/* Use DISABLE_IMPORTGL if you want to link the OpenGL ES at
- * compile/link time and not import it dynamically runtime.
- */
-#ifndef DISABLE_IMPORTGL
-
-
 /* Dynamically fetches pointers to the egl & gl functions.
  * Should be called once on application initialization.
  * Returns non-zero on success and 0 on failure.
@@ -51,6 +45,12 @@ extern int importGLInit();
 /* Frees the handle to egl & gl functions library.
  */
 extern void importGLDeinit();
+
+
+/* Use DISABLE_IMPORTGL if you want to link the OpenGL ES at
+ * compile/link time and not import it dynamically runtime.
+ */
+#ifndef DISABLE_IMPORTGL
 
 
 #ifndef IMPORTGL_API
@@ -86,6 +86,7 @@ FNDEF(void, glColorPointer, (GLint size, GLenum type, GLsizei stride, const GLvo
 FNDEF(void, glDisable, (GLenum cap));
 FNDEF(void, glDisableClientState, (GLenum array));
 FNDEF(void, glDrawArrays, (GLenum mode, GLint first, GLsizei count));
+FNDEF(void, glDrawElements, (GLenum mode, GLsizei count, GLenum type, const GLvoid * indices));
 FNDEF(void, glEnable, (GLenum cap));
 FNDEF(void, glEnableClientState, (GLenum array));
 FNDEF(void, glFrustumx, (GLfixed left, GLfixed right, GLfixed bottom, GLfixed top, GLfixed zNear, GLfixed zFar));
@@ -105,6 +106,7 @@ FNDEF(void, glShadeModel, (GLenum mode));
 FNDEF(void, glTranslatex, (GLfixed x, GLfixed y, GLfixed z));
 FNDEF(void, glVertexPointer, (GLint size, GLenum type, GLsizei stride, const GLvoid *pointer));
 FNDEF(void, glViewport, (GLint x, GLint y, GLsizei width, GLsizei height));
+FNDEF(void, glOrthox, (GLfixed left, GLfixed right, GLfixed bottom, GLfixed top, GLfixed near, GLfixed far));
 
 
 #undef FN
@@ -138,6 +140,7 @@ FNDEF(void, glViewport, (GLint x, GLint y, GLsizei width, GLsizei height));
 #define glDisable               FNPTR(glDisable)
 #define glDisableClientState    FNPTR(glDisableClientState)
 #define glDrawArrays            FNPTR(glDrawArrays)
+#define glDrawElements          FNPTR(glDrawElements)
 #define glEnable                FNPTR(glEnable)
 #define glEnableClientState     FNPTR(glEnableClientState)
 #define glFrustumx              FNPTR(glFrustumx)
@@ -157,9 +160,9 @@ FNDEF(void, glViewport, (GLint x, GLint y, GLsizei width, GLsizei height));
 #define glTranslatex            FNPTR(glTranslatex)
 #define glVertexPointer         FNPTR(glVertexPointer)
 #define glViewport              FNPTR(glViewport)
+#define glOrthox                FNPTR(glOrthox)
 
 #endif // !IMPORTGL_NO_FNPTR_DEFS
-
 
 #endif // !DISABLE_IMPORTGL
 
