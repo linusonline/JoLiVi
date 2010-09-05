@@ -4,6 +4,23 @@
 #include "common.h"
 #include "game.h"
 
+typedef struct ifloat {
+    float a;
+    float b;
+} ifloat;
+
+void ifloat_setTo(ifloat* self, int value)
+{
+    self->a = value;
+    self->b = value;
+}
+
+void ifloat_moveTo(ifloat* self, int value)
+{
+    self->a = self->b;
+    self->b = value;
+}
+
 #define RGBA4(r, g, b, a) ((r << 24) + (g << 16) + (b << 8) + a)
 #define RGBA3(r, g, b) ((r << 24) + (g << 16) + (b << 8) + 0xFF)
 #define RGBA_r(rgba) (rgba >> 24)
