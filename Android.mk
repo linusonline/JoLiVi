@@ -17,9 +17,10 @@ LOCAL_ALLOW_UNDEFINED_SYMBOLS := false
 
 LOCAL_SRC_FILES := \
     importgl.c \
-	se_lolektivet_jolivi.c \
+	se_lolektivet_jolivi_NativeFunctions.c \
 	helpers.c \
-	game.c
+	game.c \
+	common.c
 
 LOCAL_LDLIBS := -lGLESv1_CM -ldl -llog
 

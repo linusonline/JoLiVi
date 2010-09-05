@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include <assert.h>
+#include "common.h"
 #include "helpers.h"
 
 long floatToFixed(float value)
@@ -9,7 +10,7 @@ long floatToFixed(float value)
     return (long)(value * 65536);
 }
 
-void freeGLObject(GLOBJECT *object)
+void freeGLObject(GlObject *object)
 {
     if (object == NULL)
         return;
@@ -19,11 +20,11 @@ void freeGLObject(GLOBJECT *object)
     free(object);
 }
 
-GLOBJECT * newGLObject(long vertices, int vertexComponents,
+GlObject * newGLObject(long vertices, int vertexComponents,
                               int useNormalArray)
 {
-    GLOBJECT *result;
-    result = (GLOBJECT *)malloc(sizeof(GLOBJECT));
+    GlObject *result;
+    result = (GlObject *)malloc(sizeof(GlObject));
     if (result == NULL)
         return NULL;
     result->count = vertices;
@@ -48,7 +49,7 @@ GLOBJECT * newGLObject(long vertices, int vertexComponents,
     return result;
 }
 
-void drawGLObject(GLOBJECT *object)
+void drawGLObject(GlObject *object)
 {
     assert(object != NULL);
 
@@ -68,6 +69,8 @@ void drawGLObject(GLOBJECT *object)
 
 void setScreenSize(int width, int height)
 {
+    g_globals.g_window_width = width;
+    g_globals.g_window_height = height;
 	glViewport(0, 0, width, height);
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();

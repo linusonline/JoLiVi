@@ -20,17 +20,17 @@ typedef struct {
     GLfixed *normalArray;
     GLint vertexComponents;
     GLsizei count;
-} GLOBJECT;
+} GlObject;
 
 // Capped conversion from float to fixed.
 long floatToFixed(float value);
 
 #define FIXED(value) floatToFixed(value)
 
-void freeGLObject(GLOBJECT *object);
-GLOBJECT * newGLObject(long vertices, int vertexComponents,
+void freeGLObject(GlObject *object);
+GlObject * newGLObject(long vertices, int vertexComponents,
                               int useNormalArray);
-void drawGLObject(GLOBJECT *object);
+void drawGLObject(GlObject *object);
 void setScreenSize(int width, int height);
 
 #endif /* HELPERS_H_INCLUDED */
