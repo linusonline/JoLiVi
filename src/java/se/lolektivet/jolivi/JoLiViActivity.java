@@ -2,6 +2,8 @@ package se.lolektivet.jolivi;
 
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
+import java.util.TimerTask;
+import java.util.Timer;
 
 import android.app.Activity;
 import android.opengl.GLSurfaceView;
@@ -58,14 +60,40 @@ class OrientationHandler extends OrientationEventListener
     }
 }
 
-class DemoGLSurfaceView extends GLSurfaceView {
+class Heartbeat extends TimerTask
+{
+    private Timer mUpdateTimer;
+    private long mPeriod = 50;
+
+    @Override
+    public void run()
+    {
+        NativeFunctions.nativeHeartbeat();
+    }
+
+    public void start() {
+        mUpdateTimer = new Timer();
+        mUpdateTimer.schedule(this, 0, mPeriod);
+    }
+}
+
+class DemoGLSurfaceView extends GLSurfaceView
+{
     private OrientationHandler mOrientationHandler;
+    private DemoRenderer mRenderer;
+    private static Heartbeat mHeartbeat;
 
     public DemoGLSurfaceView(Context context) {
         super(context);
         mRenderer = new DemoRenderer();
         setRenderer(mRenderer);
         mOrientationHandler = new OrientationHandler(context);
+    }
+
+    public static void startHeartbeat()
+    {
+        mHeartbeat = new Heartbeat();
+        mHeartbeat.start();
     }
 
     public boolean onTouchEvent(final MotionEvent event) {
@@ -87,8 +115,6 @@ class DemoGLSurfaceView extends GLSurfaceView {
     {
         return NativeFunctions.nativeKeyUp(keyCode);
     }
-
-    DemoRenderer mRenderer;
 }
 
 class NativeFunctions
@@ -102,11 +128,14 @@ class NativeFunctions
     public static native boolean nativeKeyDown(int keyCode);
     public static native boolean nativeKeyUp(int keyCode);
     public static native void nativeOrientationChange(int orientation);
+    public static native void nativeHeartbeat();
 }
 
-class DemoRenderer implements GLSurfaceView.Renderer {
+class DemoRenderer implements GLSurfaceView.Renderer
+{
     public void onSurfaceCreated(GL10 gl, EGLConfig config) {
         NativeFunctions.nativeInit();
+        DemoGLSurfaceView.startHeartbeat();
     }
 
     public void onSurfaceChanged(GL10 gl, int w, int h) {

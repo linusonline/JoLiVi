@@ -9,5 +9,6 @@ void appRender();
 BOOL appTouchEvent(BOOL down);
 BOOL appKeyEvent(int key_code, BOOL down);
 void appOrientationEvent(short orientation);
+void appHeartbeat();
 
 #endif /* GAME_H_INCLUDED */

@@ -11,27 +11,48 @@
 #define RGBA_b(rgba) ((rgba & 0xFF00) >> 8)
 #define RGBA_a(rgba) (rgba & 0XFF)
 
+#define KEYCODE_DPAD_UP 0x00000013
+#define KEYCODE_DPAD_DOWN 0x00000014
+#define KEYCODE_DPAD_LEFT 0x00000015
+#define KEYCODE_DPAD_RIGHT 0x00000016
+
+/** Types **/
+
 typedef struct Block {
     GlObject* gl_object;
     float pos_x;
     float pos_y;
 } Block;
 
+#define MOVE_NONE 0
+#define MOVE_LEFT 1
+#define MOVE_RIGHT 2
+#define MOVE_LEFT_TAKES_PRECEDENCE 4
+// #define MOVE_LEFT 7
+// #define MOVE_BOTH_RIGHT 11
+
 typedef struct Avatar {
     GlObject* gl_object;
     float pos_x;
     float pos_y;
     float size;
+    char movement;
 } Avatar;
 
 typedef unsigned int RGBA;
+
+/** File-scoped variables **/
 
 static short block_size = 50;
 static short blocks_wide = 10;
 static short play_area_offset_x = 0;
 
+static int keys_pressed = 0;
+
 static Avatar* the_square = NULL;
 static Block* floor = NULL;
+
+/** Predeclarations of static functions **/
 
 static GlObject* newSquare(float x, float y, float width, float height, RGBA color_bl, RGBA color_br, RGBA color_tr, RGBA color_tl);
 static void GlObject_setColor(GlObject* self, RGBA color_bl, RGBA color_br, RGBA color_tr, RGBA color_tl);
@@ -40,6 +61,8 @@ static void Block_delete(Block* self);
 static void Avatar_delete(Avatar* self);
 static Avatar* Avatar_new();
 void createFloor();
+
+/** Functions **/
 
 GlObject* newSquare(float x, float y, float width, float height, RGBA color_bl, RGBA color_br, RGBA color_tr, RGBA color_tl)
 {
@@ -134,6 +157,7 @@ Avatar* Avatar_new()
     new_avatar->pos_y = block_size;
     new_avatar->gl_object = newSquare(new_avatar->pos_x, new_avatar->pos_y, new_avatar->size, new_avatar->size,
                                       RGBA3(255,255,255), RGBA3(255,255,255), RGBA3(255,255,255), RGBA3(255,255,255));
+    new_avatar->movement = 0;
     return new_avatar;
 }
 
@@ -197,9 +221,43 @@ BOOL appTouchEvent(BOOL down)
 
 BOOL appKeyEvent(int key_code, BOOL down)
 {
+    switch(key_code)
+    {
+        case KEYCODE_DPAD_LEFT:
+            if (down)
+            {
+                keys_pressed |= MOVE_LEFT;
+                keys_pressed |= MOVE_LEFT_TAKES_PRECEDENCE;
+            }
+            else
+            {
+                keys_pressed &= ~MOVE_LEFT;
+                keys_pressed &= ~MOVE_LEFT_TAKES_PRECEDENCE;
+            }
+            break;
+        case KEYCODE_DPAD_RIGHT:
+            if (down)
+            {
+                keys_pressed |= MOVE_RIGHT;
+                keys_pressed &= ~MOVE_LEFT_TAKES_PRECEDENCE;
+            }
+            else
+            {
+                keys_pressed &= ~MOVE_RIGHT;
+                keys_pressed |= MOVE_LEFT_TAKES_PRECEDENCE;
+            }
+            break;
+        default:
+            return FALSE;
+            break;
+    }
     return TRUE;
 }
 
 void appOrientationEvent(short orientation)
+{
+}
+
+void appHeartbeat()
 {
 }
