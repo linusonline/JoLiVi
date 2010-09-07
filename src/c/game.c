@@ -50,10 +50,11 @@ typedef struct Block {
 
 typedef struct Avatar {
     GlObject* gl_object;
-    float pos_x;
+    ifloat pos_x;
     float pos_y;
     float size;
     char movement;
+    float speed; // pixels per second
 } Avatar;
 
 typedef unsigned int RGBA;
@@ -63,6 +64,10 @@ typedef unsigned int RGBA;
 static short block_size = 50;
 static short blocks_wide = 10;
 static short play_area_offset_x = 0;
+static const float avatar_speed = 200.0f;
+static float avatar_max_left = 0;
+static float avatar_max_right = 430;
+static float logic_fps;
 
 static int keys_pressed = 0;
 
@@ -170,11 +175,12 @@ Avatar* Avatar_new()
 {
     Avatar* new_avatar = (Avatar*)malloc(sizeof(Avatar));
     new_avatar->size = block_size;
-    new_avatar->pos_x = 0;
+    ifloat_setTo(&new_avatar->pos_x, 0);
     new_avatar->pos_y = block_size;
-    new_avatar->gl_object = newSquare(new_avatar->pos_x, new_avatar->pos_y, new_avatar->size, new_avatar->size,
+    new_avatar->gl_object = newSquare(new_avatar->pos_x.a, new_avatar->pos_y, new_avatar->size, new_avatar->size,
                                       RGBA3(255,255,255), RGBA3(255,255,255), RGBA3(255,255,255), RGBA3(255,255,255));
     new_avatar->movement = 0;
+    new_avatar->speed = 0;
     return new_avatar;
 }
 
@@ -188,8 +194,9 @@ void createFloor()
     }
 }
 
-void appInit()
+void appInit(float fps)
 {
+    logic_fps = fps;
     importGLInit();
     glEnableClientState(GL_VERTEX_ARRAY);
     glEnableClientState(GL_COLOR_ARRAY);
@@ -268,6 +275,7 @@ BOOL appKeyEvent(int key_code, BOOL down)
             return FALSE;
             break;
     }
+    debug("Speed: %f, Position: %f", the_square->speed, the_square->pos_x.b);
     return TRUE;
 }
 
@@ -275,6 +283,24 @@ void appOrientationEvent(short orientation)
 {
 }
 
+void appResizeEvent()
+{
+    avatar_max_right = g_globals.g_window_width - the_square->size;
+}
+
 void appHeartbeat()
 {
+    if (keys_pressed & MOVE_LEFT && keys_pressed & MOVE_LEFT_TAKES_PRECEDENCE)
+    {
+        the_square->speed = -avatar_speed;
+    }
+    else if (keys_pressed & MOVE_RIGHT && !(keys_pressed & MOVE_LEFT_TAKES_PRECEDENCE))
+    {
+        the_square->speed = avatar_speed;
+    }
+    else
+    {
+        the_square->speed = 0.0f;
+    }
+    ifloat_moveTo(&(the_square->pos_x), MAX(MIN(the_square->pos_x.b + the_square->speed / logic_fps, avatar_max_right), avatar_max_left));
 }

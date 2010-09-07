@@ -10,9 +10,9 @@
  * Signature: ()V
  */
 JNIEXPORT void JNICALL Java_se_lolektivet_jolivi_NativeFunctions_nativeInit
-  (JNIEnv* env, jclass clazz)
+  (JNIEnv* env, jclass clazz, jfloat fps)
 {
-    appInit();
+    appInit((float)fps);
 }
 
 /*

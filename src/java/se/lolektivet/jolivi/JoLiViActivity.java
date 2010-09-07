@@ -9,6 +9,8 @@ import android.app.Activity;
 import android.opengl.GLSurfaceView;
 import android.content.Context;
 import android.view.MotionEvent;
+import android.view.View;
+// import android.view.View.onKeyListener;
 import android.view.OrientationEventListener;
 import android.view.KeyEvent;
 import android.os.Bundle;
@@ -22,6 +24,7 @@ public class JoLiViActivity extends Activity
     public void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
+        // mGLView = (DemoGLSurfaceView)findViewById(R.layout.main);
         mGLView = new DemoGLSurfaceView(this);
         setContentView(mGLView);
     }
@@ -63,7 +66,7 @@ class OrientationHandler extends OrientationEventListener
 class Heartbeat extends TimerTask
 {
     private Timer mUpdateTimer;
-    private long mPeriod = 50;
+    public static final float Fps = 20.0f;
 
     @Override
     public void run()
@@ -73,11 +76,11 @@ class Heartbeat extends TimerTask
 
     public void start() {
         mUpdateTimer = new Timer();
-        mUpdateTimer.schedule(this, 0, mPeriod);
+        mUpdateTimer.schedule(this, 0, (int)(1000.0f / Fps));
     }
 }
 
-class DemoGLSurfaceView extends GLSurfaceView
+class DemoGLSurfaceView extends GLSurfaceView implements View.OnKeyListener
 {
     private OrientationHandler mOrientationHandler;
     private DemoRenderer mRenderer;
@@ -88,6 +91,8 @@ class DemoGLSurfaceView extends GLSurfaceView
         mRenderer = new DemoRenderer();
         setRenderer(mRenderer);
         mOrientationHandler = new OrientationHandler(context);
+        // View mainView = (View)findViewById(R.layout.main);
+        // setOnKeyListener(this);
     }
 
     public static void startHeartbeat()
@@ -108,18 +113,46 @@ class DemoGLSurfaceView extends GLSurfaceView
 
     public boolean onKeyDown(int keyCode, KeyEvent event)
     {
-        return NativeFunctions.nativeKeyDown(keyCode);
+        System.out.println("onKeyDown, keyCode: "+keyCode);
+        if (NativeFunctions.nativeKeyDown(keyCode))
+        {
+            return true;
+        }
+        else
+        {
+            return super.onKeyDown(keyCode, event);
+        }
     }
-
     public boolean onKeyUp(int keyCode, KeyEvent event)
     {
-        return NativeFunctions.nativeKeyUp(keyCode);
+        System.out.println("onKeyUp, keyCode: "+keyCode);
+        if (NativeFunctions.nativeKeyUp(keyCode))
+        {
+            return true;
+        }
+        else
+        {
+            return super.onKeyUp(keyCode, event);
+        }
+    }
+
+    public boolean onKey(View v, int keyCode, KeyEvent event)
+    {
+        if (event.getAction() == KeyEvent.ACTION_DOWN) {
+            System.out.println("onKeyDown, keyCode: "+keyCode);
+            return NativeFunctions.nativeKeyDown(keyCode);
+        }
+        if (event.getAction() == KeyEvent.ACTION_UP) {
+            System.out.println("onKeyUp, keyCode: "+keyCode);
+            return NativeFunctions.nativeKeyUp(keyCode);
+        }
+        return false;
     }
 }
 
 class NativeFunctions
 {
-    public static native void nativeInit();
+    public static native void nativeInit(float fps);
     public static native void nativeResize(int w, int h);
     public static native void nativeRender();
     public static native void nativeDone();
@@ -134,7 +167,7 @@ class NativeFunctions
 class DemoRenderer implements GLSurfaceView.Renderer
 {
     public void onSurfaceCreated(GL10 gl, EGLConfig config) {
-        NativeFunctions.nativeInit();
+        NativeFunctions.nativeInit(Heartbeat.Fps);
         DemoGLSurfaceView.startHeartbeat();
     }
 

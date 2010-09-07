@@ -259,6 +259,14 @@
 
     <!-- Rules -->
 
+    <target name="-debug-init">
+      <property name="debug" value="true"/>
+    </target>
+
+    <target name="-release-init">
+      <property name="debug" value="false"/>
+    </target>
+
     <!-- Creates the output directories if they don't exist yet. -->
     <target name="-dirs">
         <echo>Creating output directories if needed...</echo>
@@ -368,7 +376,7 @@
     </target>
 
     <!-- Builds debug output package, provided all the necessary files are already dexed -->
-    <target name="debug" depends="-compile-tested-if-test, -package-debug-sign"
+    <target name="debug" depends="-debug-init, -compile-tested-if-test, -package-debug-sign"
                 description="Builds the application and signs it with a debug key.">
         <zipalign-helper in.package="${out.debug.unaligned.package}"
                                    out.package="${out.debug.package}" />
@@ -392,7 +400,7 @@
         <echo>and run zipalign from the Android SDK tools.</echo>
     </target>
 
-    <target name="release" depends="-package-no-sign, -release-nosign" if="release.sign"
+    <target name="release" depends="-release-init, -package-no-sign, -release-nosign" if="release.sign"
                 description="Builds the application. The generated apk file must be signed before
                             it is published.">
         <!-- Gets passwords -->
@@ -531,8 +539,11 @@
     <condition property="ndk.verbosity.arg" value="V=1 NDK_LOG=1" else="V=0">
       <istrue value="${verbose}"/>
     </condition>
+    <condition property="ndk.debug.arg" value="DEBUG=true" else="DEBUG=false">
+      <istrue value="${debug}"/>
+    </condition>
     <exec executable="sh" dir="${out.absolute.dir}" failonerror="true">
-      <arg line="${ndk.dir}/ndk-build ${ndk.verbosity.arg}"/>
+      <arg line="${ndk.dir}/ndk-build ${ndk.verbosity.arg} ${ndk.debug.arg}"/>
     </exec>
   </target>
 

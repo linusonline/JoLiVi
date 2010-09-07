@@ -3,11 +3,12 @@
 
 #include "common.h"
 
-void appInit();
+void appInit(float fps);
 void appDeinit();
 void appRender();
 BOOL appTouchEvent(BOOL down);
 BOOL appKeyEvent(int key_code, BOOL down);
+void appResizeEvent();
 void appOrientationEvent(short orientation);
 void appHeartbeat();
 
