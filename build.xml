@@ -44,6 +44,12 @@
     <pathelement path="${sdk.dir}/tools/lib/jarutils.jar" />
   </path>
 
+  <taskdef resource="net/sf/antcontrib/antcontrib.properties">
+    <classpath>
+      <pathelement location="tools/ant-contrib/ant-contrib-1.0b3.jar"/>
+    </classpath>
+  </taskdef>
+
   <taskdef name="setup"
     classname="com.android.ant.SetupTask"
     classpathref="android.antlibs" />
@@ -89,6 +95,17 @@
     classname="com.android.ant.XPathTask"
     classpathref="android.antlibs" />
 
+  <macrodef name="my.echo">
+    <text name="my.echo.text"/>
+    <sequential>
+      <if>
+        <istrue value="${verbose}"/>
+        <then>
+          <echo>@{my.echo.text}</echo>
+        </then>
+      </if>
+    </sequential>
+  </macrodef>
   <!-- Properties -->
 
   <!-- Tells adb which device to target. You can change this from the command line
@@ -186,8 +203,8 @@
     <element name="external-libs" optional="yes" />
     <element name="extra-parameters" optional="yes" />
     <sequential>
-      <echo>Converting compiled files and external libraries into ${intermediate.dex.file}...
-      </echo>
+      <my.echo>Converting compiled files and external libraries into ${intermediate.dex.file}...
+      </my.echo>
       <apply executable="${dx}" failonerror="true" parallel="true">
         <arg value="--dex" />
         <arg value="--output=${intermediate.dex.file}" />
@@ -233,7 +250,7 @@
     <attribute name="in.package" />
     <attribute name="out.package" />
     <sequential>
-      <echo>Running zip align on final apk...</echo>
+      <my.echo>Running zip align on final apk...</my.echo>
       <exec executable="${zipalign}" failonerror="true">
         <arg line="${v.option}" />
         <arg value="-f" />
@@ -244,49 +261,29 @@
     </sequential>
   </macrodef>
 
-  <!-- This is macro used only for sharing code among two targets, -install and
-       -install-with-emma which do exactly the same but differ in dependencies -->
-  <macrodef name="install-helper">
-    <sequential>
-      <echo>Installing ${out.debug.package} onto default emulator or device...</echo>
-      <exec executable="${adb}" failonerror="true">
-        <arg line="${adb.device.arg}" />
-        <arg value="install" />
-        <arg value="-r" />
-        <arg path="${out.debug.package}" />
-      </exec>
-    </sequential>
-  </macrodef>
-
-  <macrodef name="android-install" description="Install Opera Mini onto running emulator or connected device.">
+  <macrodef name="install" description="Install Opera Mini onto running emulator or connected device.">
     <attribute name="adbarg" default=""/>
     <sequential>
-    <exec executable="${android.home}/tools/adb" failonerror="true" outputproperty="adb.output">
-      <arg line="@{adbarg} install"/>
-      <arg value="-r"/>
-      <arg value="${output.build.dir}/operamini.apk"/>
-    </exec>
-    <if>
-      <not>
-        <contains string="${adb.output}" substring="Success"/>
-      </not>
-      <then>
-        <exec executable="${android.home}/tools/adb" failonerror="true">
-          <arg line="@{adbarg} uninstall"/>
-          <arg value="com.opera.mini.android"/>
-        </exec>
-        <exec executable="${android.home}/tools/adb" failonerror="true">
-          <arg line="@{adbarg} install"/>
-          <arg value="${output.build.dir}/operamini.apk"/>
-        </exec>
-      </then>
-    </if>
-    <if>
-      <istrue value="${bream.debug}"/>
-      <then>
-        <android-push-debuginfo adbarg="@{adbarg}" />
-      </then>
-    </if>
+      <exec executable="${sdk.dir}/tools/adb" failonerror="true" outputproperty="adb.output">
+        <arg line="@{adbarg} install"/>
+        <arg value="-r"/>
+        <arg value="${out.debug.package}"/>
+      </exec>
+      <if>
+        <not>
+          <contains string="${adb.output}" substring="Success"/>
+        </not>
+        <then>
+          <exec executable="${sdk.dir}/tools/adb" failonerror="true">
+            <arg line="@{adbarg} uninstall"/>
+            <arg value="${manifest.package}"/>
+          </exec>
+          <exec executable="${sdk.dir}/tools/adb" failonerror="true">
+            <arg line="@{adbarg} install"/>
+            <arg value="${out.debug.package}"/>
+          </exec>
+        </then>
+      </if>
     </sequential>
   </macrodef>
 
@@ -302,7 +299,7 @@
 
   <!-- Creates the output directories if they don't exist yet. -->
   <target name="-dirs">
-    <echo>Creating output directories if needed...</echo>
+    <my.echo>Creating output directories if needed...</my.echo>
     <mkdir dir="${resource.absolute.dir}" />
     <mkdir dir="${external.libs.absolute.dir}" />
     <mkdir dir="${native.libs.absolute.dir}" />
@@ -315,7 +312,7 @@
 
   <!-- Generates the R.java file for this project's resources. -->
   <target name="-resource-src" depends="-dirs">
-    <echo>Generating R.java / Manifest.java from the resources...</echo>
+    <my.echo>Generating R.java / Manifest.java from the resources...</my.echo>
     <exec executable="${aapt}" failonerror="true">
       <arg value="package" />
       <arg line="${v.option}" />
@@ -333,7 +330,7 @@
 
   <!-- Generates java classes from .aidl files. -->
   <target name="-aidl" depends="-dirs">
-    <echo>Compiling aidl files into Java classes...</echo>
+    <my.echo>Compiling aidl files into Java classes...</my.echo>
     <apply executable="${aidl}" failonerror="true">
       <arg value="-p${android.aidl}" />
       <arg value="-I${source.absolute.dir}" />
@@ -381,7 +378,7 @@
        declared in default.properties.
        -->
   <target name="-package-resources">
-    <echo>Packaging resources</echo>
+    <my.echo>Packaging resources</my.echo>
     <aaptexec executable="${aapt}"
               command="package"
               manifest="AndroidManifest.xml"
@@ -415,7 +412,7 @@
                                out.package="${out.debug.package}" />
     <delete file="${out.debug.unaligned.package}"/>
     <delete file="${out.absolute.dir}/JoLiVi.ap_"/>
-    <echo>Debug Package: ${out.debug.package}</echo>
+    <my.echo>Debug Package: ${out.debug.package}</my.echo>
   </target>
 
   <target name="-release-check">
@@ -445,7 +442,7 @@
             addproperty="key.alias.password" />
 
     <!-- Signs the APK -->
-    <echo>Signing final apk...</echo>
+    <my.echo>Signing final apk...</my.echo>
     <signjar
             jar="${out.unsigned.package}"
             signedjar="${out.unaligned.package}"
@@ -458,14 +455,31 @@
     <!-- Zip aligns the APK -->
     <zipalign-helper in.package="${out.unaligned.package}"
                                out.package="${out.release.package}" />
-    <echo>Release Package: ${out.release.package}</echo>
+    <my.echo>Release Package: ${out.release.package}</my.echo>
   </target>
 
-  <target name="install" depends="debug"
-              description="Installs/reinstalls the debug package onto a running
-                          emulator or device. If the application was previously installed,
-                          the signatures must match." >
-    <install-helper />
+  <target name="install" depends="debug" description="Build and install onto running emulator or connected device.">
+    <install />
+  </target>
+
+  <target name="install-d" depends="debug" description="Build and install onto connected device.">
+    <install adbarg="-d" />
+  </target>
+
+  <target name="install-e" depends="debug" description="Build and install onto running emulator.">
+    <install adbarg="-e" />
+  </target>
+
+  <target name="reinstall" description="Install last build onto running emulator or connected device.">
+    <install />
+  </target>
+
+  <target name="reinstall-d" description="Install last build onto connected device.">
+    <install adbarg="-d" />
+  </target>
+
+  <target name="reinstall-e" description="Install last build onto running emulator.">
+    <install adbarg="-e" />
   </target>
 
   <target name="-uninstall-check">
@@ -482,7 +496,7 @@
   <!-- Uninstalls the package from the default emulator/device -->
   <target name="uninstall" depends="-uninstall-error" if="uninstall.run"
               description="Uninstalls the application from a running emulator or device.">
-    <echo>Uninstalling ${manifest.package} from the default emulator or device...</echo>
+    <my.echo>Uninstalling ${manifest.package} from the default emulator or device...</my.echo>
     <exec executable="${adb}" failonerror="true">
       <arg line="${adb.device.arg}" />
       <arg value="uninstall" />
@@ -499,7 +513,7 @@
   <!-- Emma-instruments tested project classes (compiles the tested project if necessary)
            and writes instrumented classes to ${instrumentation.absolute.dir}/classes -->
   <target name="-emma-instrument" depends="compile">
-    <echo>Instrumenting classes from ${out.absolute.dir}/classes...</echo>
+    <my.echo>Instrumenting classes from ${out.absolute.dir}/classes...</my.echo>
     <!-- It only instruments class files, not any external libs -->
     <emma enabled="true">
       <instr verbosity="${verbosity}"
