@@ -20,10 +20,10 @@ extern Globals g_globals;
 
 #ifdef DEBUG
 void debug(const char* fmt, ...);
-void debug_scope(const char* fmt, const char* scope, ...);
+void debug_scope(const char* scope, const char* fmt, ...);
 #else
 # define debug(fmt, ...) do {} while (FALSE)
-# define debug_scope(fmt, scope, ...) do {} while (FALSE)
+# define debug_scope(scope, fmt, ...) do {} while (FALSE)
 #endif
 
 #endif /* COMMON_H_INCLUDED */

@@ -10,7 +10,6 @@ import android.opengl.GLSurfaceView;
 import android.content.Context;
 import android.view.MotionEvent;
 import android.view.View;
-// import android.view.View.onKeyListener;
 import android.view.OrientationEventListener;
 import android.view.KeyEvent;
 import android.os.Bundle;
@@ -24,8 +23,8 @@ public class JoLiViActivity extends Activity
     public void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
-        // mGLView = (DemoGLSurfaceView)findViewById(R.layout.main);
         mGLView = new DemoGLSurfaceView(this);
+        mGLView.setDebugFlags(GLSurfaceView.DEBUG_LOG_GL_CALLS);
         setContentView(mGLView);
     }
 
@@ -91,8 +90,6 @@ class DemoGLSurfaceView extends GLSurfaceView implements View.OnKeyListener
         mRenderer = new DemoRenderer();
         setRenderer(mRenderer);
         mOrientationHandler = new OrientationHandler(context);
-        // View mainView = (View)findViewById(R.layout.main);
-        // setOnKeyListener(this);
     }
 
     public static void startHeartbeat()

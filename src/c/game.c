@@ -33,6 +33,21 @@ void ifloat_moveTo(ifloat* self, int value)
 #define KEYCODE_DPAD_LEFT 0x00000015
 #define KEYCODE_DPAD_RIGHT 0x00000016
 
+#define CONTROL_METHOD_UNDETERMINED -1
+#define CONTROL_METHOD_TILT 1
+#define CONTROL_METHOD_DPAD 2
+#define CONTROL_METHOD_TOUCH 3
+
+#define CONTROL_TILT_LEFT_THRESHHOLD 260
+#define CONTROL_TILT_RIGHT_THRESHHOLD 280
+#define CONTROL_TILT_LEFT_LIMIT 180
+#define CONTROL_TILT_RIGHT_LIMIT 360
+
+#define MOVE_NONE 0
+#define MOVE_LEFT 1
+#define MOVE_RIGHT 2
+#define MOVE_LEFT_TAKES_PRECEDENCE 4
+
 /** Types **/
 
 typedef struct Block {
@@ -40,13 +55,6 @@ typedef struct Block {
     float pos_x;
     float pos_y;
 } Block;
-
-#define MOVE_NONE 0
-#define MOVE_LEFT 1
-#define MOVE_RIGHT 2
-#define MOVE_LEFT_TAKES_PRECEDENCE 4
-// #define MOVE_LEFT 7
-// #define MOVE_BOTH_RIGHT 11
 
 typedef struct Avatar {
     GlObject* gl_object;
@@ -70,6 +78,8 @@ static float avatar_max_right = 430;
 static float logic_fps;
 
 static int keys_pressed = 0;
+static short device_orientation = 0;
+static unsigned short control_method = CONTROL_METHOD_TILT;
 
 static Avatar* the_square = NULL;
 static Block* floor = NULL;
@@ -196,8 +206,10 @@ void createFloor()
 
 void appInit(float fps)
 {
+    debug("Initializing native app.");
     logic_fps = fps;
     importGLInit();
+
     glEnableClientState(GL_VERTEX_ARRAY);
     glEnableClientState(GL_COLOR_ARRAY);
     glClearColorx(FIXED(1.0f), FIXED(0.0f), FIXED(0.0f), FIXED(1.0f));
@@ -222,7 +234,15 @@ void appDeinit()
 void appRender()
 {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    setScreenSize(g_globals.g_window_width, g_globals.g_window_height);
+    glMatrixMode(GL_MODELVIEW);
+    glLoadIdentity();
+
+    glPushMatrix();
+    glTranslatex(FIXED(the_square->pos_x.b), FIXED(0.0f), FIXED(0.0f));
     drawGLObject(the_square->gl_object);
+    glPopMatrix();
+
     int i;
     for (i = 0; i < blocks_wide; ++i)
     {
@@ -275,13 +295,13 @@ BOOL appKeyEvent(int key_code, BOOL down)
             return FALSE;
             break;
     }
-    debug("Speed: %f, Position: %f", the_square->speed, the_square->pos_x.b);
     return TRUE;
 }
 
 void appOrientationEvent(short orientation)
 {
-    debug("Orientation: %i", orientation);
+    device_orientation = orientation;
+    // debug("Orientation: %i", orientation);
 }
 
 void appResizeEvent()
@@ -291,17 +311,49 @@ void appResizeEvent()
 
 void appHeartbeat()
 {
-    if (keys_pressed & MOVE_LEFT && keys_pressed & MOVE_LEFT_TAKES_PRECEDENCE)
+    switch (control_method)
     {
-        the_square->speed = -avatar_speed;
-    }
-    else if (keys_pressed & MOVE_RIGHT && !(keys_pressed & MOVE_LEFT_TAKES_PRECEDENCE))
-    {
-        the_square->speed = avatar_speed;
-    }
-    else
-    {
-        the_square->speed = 0.0f;
+        case CONTROL_METHOD_TILT:
+        {
+            if (device_orientation < CONTROL_TILT_LEFT_THRESHHOLD && device_orientation > CONTROL_TILT_LEFT_LIMIT)
+            {
+                the_square->speed = -avatar_speed;
+            }
+            else if (device_orientation > CONTROL_TILT_RIGHT_THRESHHOLD && device_orientation < CONTROL_TILT_RIGHT_LIMIT)
+            {
+                the_square->speed = avatar_speed;
+            }
+            else
+            {
+                the_square->speed = 0.0f;
+            }
+        }
+        break;
+        case CONTROL_METHOD_TOUCH:
+        {
+        }
+        break;
+        case CONTROL_METHOD_UNDETERMINED:
+        //fallthrough
+        case CONTROL_METHOD_DPAD:
+        {
+            if (keys_pressed & MOVE_LEFT && keys_pressed & MOVE_LEFT_TAKES_PRECEDENCE)
+            {
+                the_square->speed = -avatar_speed;
+            }
+            else if (keys_pressed & MOVE_RIGHT && !(keys_pressed & MOVE_LEFT_TAKES_PRECEDENCE))
+            {
+                the_square->speed = avatar_speed;
+            }
+            else
+            {
+                the_square->speed = 0.0f;
+            }
+        }
+        break;
+        default:
+            debug_scope("ERROR", "Unknown control_method!");
     }
     ifloat_moveTo(&(the_square->pos_x), MAX(MIN(the_square->pos_x.b + the_square->speed / logic_fps, avatar_max_right), avatar_max_left));
+    // debug("Speed: %f, Position: %f", the_square->speed, the_square->pos_x.b);
 }
