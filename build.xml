@@ -357,7 +357,8 @@
     <javac encoding="ascii" target="1.5" debug="true" extdirs=""
             destdir="${out.classes.absolute.dir}"
             bootclasspathref="android.target.classpath"
-            verbose="${verbose}" classpath="${extensible.classpath}">
+            verbose="${verbose}" classpath="${extensible.classpath}"
+            includeAntRuntime="false">
       <src path="${source.absolute.dir}" />
       <src path="${gen.absolute.dir}" />
       <classpath>
