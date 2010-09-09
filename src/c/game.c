@@ -281,6 +281,7 @@ BOOL appKeyEvent(int key_code, BOOL down)
 
 void appOrientationEvent(short orientation)
 {
+    debug("Orientation: %i", orientation);
 }
 
 void appResizeEvent()
