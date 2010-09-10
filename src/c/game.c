@@ -70,7 +70,7 @@ typedef unsigned int RGBA;
 /** File-scoped variables **/
 
 static short block_size = 50;
-static short blocks_wide = 10;
+static short blocks_wide = 12;
 static short play_area_offset_x = 0;
 static const float avatar_speed = 200.0f;
 static float avatar_max_left = 0;

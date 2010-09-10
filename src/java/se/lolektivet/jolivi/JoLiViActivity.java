@@ -25,6 +25,7 @@ public class JoLiViActivity extends Activity
         super.onCreate(savedInstanceState);
         mGLView = new DemoGLSurfaceView(this);
         mGLView.setDebugFlags(GLSurfaceView.DEBUG_LOG_GL_CALLS);
+
         setContentView(mGLView);
     }
 
