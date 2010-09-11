@@ -69,8 +69,8 @@ void drawGLObject(GlObject *object)
 
 void setScreenSize(int width, int height)
 {
-    g_globals.g_window_width = width;
-    g_globals.g_window_height = height;
+    g_globals.window_width = width;
+    g_globals.window_height = height;
 	glViewport(0, 0, width, height);
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();

@@ -24,6 +24,7 @@ LOCAL_SRC_FILES := \
 	se_lolektivet_jolivi_NativeFunctions.c \
 	helpers.c \
 	app.c \
+	game_mode.c \
 	common.c
 
 LOCAL_LDLIBS := -lGLESv1_CM -ldl -llog
