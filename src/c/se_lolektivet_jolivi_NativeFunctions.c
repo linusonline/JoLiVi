@@ -23,8 +23,8 @@ JNIEXPORT void JNICALL Java_se_lolektivet_jolivi_NativeFunctions_nativeInit
 JNIEXPORT void JNICALL Java_se_lolektivet_jolivi_NativeFunctions_nativeResize
   (JNIEnv* env, jclass clazz, jint width, jint height)
 {
-    __android_log_print(ANDROID_LOG_INFO, "SanAngeles", "resize w=%d h=%d", width, height);
 	setScreenSize(width, height);
+    appResizeEvent();
 }
 
 /*

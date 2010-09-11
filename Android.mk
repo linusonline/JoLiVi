@@ -25,6 +25,7 @@ LOCAL_SRC_FILES := \
 	helpers.c \
 	app.c \
 	game_mode.c \
+	menu_mode.c \
 	common.c
 
 LOCAL_LDLIBS := -lGLESv1_CM -ldl -llog

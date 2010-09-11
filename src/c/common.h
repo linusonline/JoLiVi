@@ -25,6 +25,13 @@ void ifloat_moveTo(ifloat* self, int value);
 
 typedef unsigned int RGBA;
 
+typedef enum
+{
+    MODE_NONE = 0,
+    MODE_MENU,
+    MODE_GAME
+} MODE;
+
 #define RGBA4(r, g, b, a) ((r << 24) + (g << 16) + (b << 8) + a)
 #define RGBA3(r, g, b) ((r << 24) + (g << 16) + (b << 8) + 0xFF)
 #define RGBA_r(rgba) (rgba >> 24)
@@ -41,6 +48,7 @@ typedef struct Globals {
     short window_width;
     short window_height;
     short device_orientation;
+    float logic_fps;
 } Globals;
 
 extern Globals g_globals;

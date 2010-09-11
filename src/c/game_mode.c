@@ -38,6 +38,9 @@ typedef struct Avatar {
 
 /** File-scoped variables **/
 
+static MODE next_mode = MODE_MENU;
+static BOOL done = FALSE;
+
 static short control_method = CONTROL_METHOD_TILT;
 static int keys_pressed = 0;
 static short block_size = 50;
@@ -46,7 +49,6 @@ static short play_area_offset_x = 0;
 static const float avatar_speed = 200.0f;
 static float avatar_max_left = 0;
 static float avatar_max_right = 430;
-static float logic_fps;
 static Avatar* the_square = NULL;
 static Block* floor = NULL;
 
@@ -170,19 +172,9 @@ void createFloor()
     }
 }
 
-void game_Init(float fps)
+void game_Init()
 {
-    debug("Initializing native app.");
-    logic_fps = fps;
-    importGLInit();
-
-    glEnableClientState(GL_VERTEX_ARRAY);
-    glEnableClientState(GL_COLOR_ARRAY);
-    glClearColorx(FIXED(1.0f), FIXED(0.0f), FIXED(0.0f), FIXED(1.0f));
-    glMatrixMode(GL_PROJECTION);
-    glLoadIdentity();
-    glMatrixMode(GL_MODELVIEW);
-    glLoadIdentity();
+    debug_scope("Trace", "Game initializing.");
 
     block_size = g_globals.window_width / blocks_wide;
     play_area_offset_x = (g_globals.window_width - blocks_wide * block_size) / 2;
@@ -191,10 +183,23 @@ void game_Init(float fps)
     createFloor();
 }
 
+void game_Start()
+{
+    debug_scope("Trace", "Game started.");
+    glEnableClientState(GL_VERTEX_ARRAY);
+    glEnableClientState(GL_COLOR_ARRAY);
+    glClearColorx(FIXED(1.0f), FIXED(0.0f), FIXED(0.0f), FIXED(1.0f));
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+    glMatrixMode(GL_MODELVIEW);
+    glLoadIdentity();
+    done = FALSE;
+}
+
 void game_DeInit()
 {
+    debug_scope("Trace", "Game deinitializing.");
     Avatar_delete(the_square);
-    importGLDeinit();
 }
 
 void game_Render()
@@ -218,6 +223,7 @@ void game_Render()
 
 BOOL game_TouchEvent(BOOL down)
 {
+    debug_scope("Event", "Game received touch event.");
     if (down)
     {
         GlObject_setColor(the_square->gl_object, RGBA3(0,0,0), RGBA3(0,0,0), RGBA3(0,0,0), RGBA3(0,0,0));
@@ -231,6 +237,7 @@ BOOL game_TouchEvent(BOOL down)
 
 BOOL game_KeyEvent(int key_code, BOOL down)
 {
+    debug_scope("Event", "Game received key event.");
     switch(key_code)
     {
         case KEYCODE_DPAD_LEFT:
@@ -266,12 +273,14 @@ BOOL game_KeyEvent(int key_code, BOOL down)
 
 void game_OrientationEvent(short orientation)
 {
+    debug_scope("Event", "Game received orientation event.");
     // device_orientation = orientation;
     // debug("Orientation: %i", orientation);
 }
 
 void game_ResizeEvent()
 {
+    debug_scope("Event", "Game received resize event.");
     avatar_max_right = g_globals.window_width - the_square->size;
 }
 
@@ -320,6 +329,23 @@ void game_Heartbeat()
         default:
             debug_scope("ERROR", "Unknown control_method!");
     }
-    ifloat_moveTo(&(the_square->pos_x), MAX(MIN(the_square->pos_x.b + the_square->speed / logic_fps, avatar_max_right), avatar_max_left));
+    ifloat_moveTo(&(the_square->pos_x), MAX(MIN(the_square->pos_x.b + the_square->speed / g_globals.logic_fps, avatar_max_right), avatar_max_left));
+    if (g_globals.device_orientation > 170 && g_globals.device_orientation < 190)
+    {
+        done = TRUE;
+    }
     // debug("Speed: %f, Position: %f", the_square->speed, the_square->pos_x.b);
+}
+
+MODE game_IsDone()
+{
+    if (done)
+    {
+        debug_scope("Trace", "Game is done.");
+        return next_mode;
+    }
+    else
+    {
+        return MODE_NONE;
+    }
 }
