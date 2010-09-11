@@ -1,7 +1,7 @@
 #include <jni.h>
 #include <android/log.h>
 #include "common.h"
-#include "game.h"
+#include "app.h"
 #include "helpers.h"
 
 /*

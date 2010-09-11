@@ -23,7 +23,7 @@ LOCAL_SRC_FILES := \
     importgl.c \
 	se_lolektivet_jolivi_NativeFunctions.c \
 	helpers.c \
-	game.c \
+	app.c \
 	common.c
 
 LOCAL_LDLIBS := -lGLESv1_CM -ldl -llog
