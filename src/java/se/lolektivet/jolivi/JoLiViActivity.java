@@ -24,7 +24,6 @@ public class JoLiViActivity extends Activity
     {
         super.onCreate(savedInstanceState);
         mGLView = new DemoGLSurfaceView(this);
-        mGLView.setDebugFlags(GLSurfaceView.DEBUG_LOG_GL_CALLS);
 
         setContentView(mGLView);
     }
@@ -89,8 +88,12 @@ class DemoGLSurfaceView extends GLSurfaceView implements View.OnKeyListener
     public DemoGLSurfaceView(Context context) {
         super(context);
         mRenderer = new DemoRenderer();
+        setDebugFlags(DEBUG_CHECK_GL_ERROR | DEBUG_LOG_GL_CALLS);
         setRenderer(mRenderer);
         mOrientationHandler = new OrientationHandler(context);
+        setFocusable(true);
+        setFocusableInTouchMode(true);
+        requestFocus();
     }
 
     public static void startHeartbeat()
@@ -99,11 +102,25 @@ class DemoGLSurfaceView extends GLSurfaceView implements View.OnKeyListener
         mHeartbeat.start();
     }
 
+    @Override
+    public void onPause() {
+        super.onPause();
+        System.out.println("GLSurfaceView paused");
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        System.out.println("GLSurfaceView resumed");
+    }
+
     public boolean onTouchEvent(final MotionEvent event) {
         if (event.getAction() == MotionEvent.ACTION_DOWN) {
+            System.out.println("Java received touch down event.");
             return NativeFunctions.nativeTouchDown();
         }
         if (event.getAction() == MotionEvent.ACTION_UP) {
+            System.out.println("Java received touch up event.");
             return NativeFunctions.nativeTouchUp();
         }
         return false;

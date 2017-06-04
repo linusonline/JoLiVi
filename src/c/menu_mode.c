@@ -25,6 +25,7 @@ void menu_DeInit()
 
 void menu_Render()
 {
+    setScreenSize(g_globals.window_width, g_globals.window_height);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 

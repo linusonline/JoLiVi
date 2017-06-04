@@ -79,7 +79,7 @@ JNIEXPORT jboolean JNICALL Java_se_lolektivet_jolivi_NativeFunctions_nativeTouch
 JNIEXPORT jboolean JNICALL Java_se_lolektivet_jolivi_NativeFunctions_nativeKeyDown
   (JNIEnv* env, jclass clazz, jint keyCode)
 {
-    return appKeyEvent(TRUE, keyCode);
+    return appKeyEvent(keyCode, TRUE);
 }
 
 /*
@@ -90,7 +90,7 @@ JNIEXPORT jboolean JNICALL Java_se_lolektivet_jolivi_NativeFunctions_nativeKeyDo
 JNIEXPORT jboolean JNICALL Java_se_lolektivet_jolivi_NativeFunctions_nativeKeyUp
   (JNIEnv* env, jclass clazz, jint keyCode)
 {
-    return appKeyEvent(FALSE, keyCode);
+    return appKeyEvent(keyCode, FALSE);
 }
 
 /*
